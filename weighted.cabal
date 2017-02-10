@@ -1,5 +1,5 @@
 name:                weighted
-version:             0.2.0.0
+version:             0.3.0.0
 synopsis:            Writer monad which uses semiring constraint
 description:         Writer monad which uses semiring constraint
 homepage:            https://github.com/oisdk/weighted
