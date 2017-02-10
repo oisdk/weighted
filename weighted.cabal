@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Control.Monad.Weighted
-  other-modules:       Control.Monad.Weighted.Filter
+                     , Control.Monad.Weighted.Filter
                      , Control.Monad.Weighted.Class
   build-depends:       base >= 4.9 && < 5
                      , semiring-num >= 0.9

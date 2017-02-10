@@ -15,11 +15,7 @@ module Control.Monad.Weighted
   ,execWeightedT
   ,evalWeightedT
   ,execWeighted
-  ,evalWeighted
-  ,MonadWeighted(..)
-  ,FilterT
-  ,pattern FilterT
-  ,runFilterT)
+  ,evalWeighted)
   where
 
 
@@ -33,7 +29,6 @@ import           Control.Monad.Fail
 import           Control.Monad.Reader.Class
 import           Control.Monad.Writer.Class
 
-import           Control.Monad.Weighted.Filter
 import           Control.Monad.Weighted.Class
 
 import           Data.Coerce

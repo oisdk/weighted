@@ -37,9 +37,6 @@ catchZero :: (DetectableZero s, Alternative m) => (s -> m a) -> s -> m a
 catchZero f s | isZero s = empty
               | otherwise = f s
 
--- mapMaybe :: (Alternative m, Monad m, Foldable f) => (a -> f b) -> m a -> m b
--- mapMaybe f xs = xs >>= foldr ((<|>) . pure) empty . f
-
 remZeroes :: (DetectableZero s, Alternative m, Monad m) => m (a, s) -> m (a, s)
 remZeroes xs = xs >>=  (\(x,p) -> if isZero p then empty else pure (x,p))
 

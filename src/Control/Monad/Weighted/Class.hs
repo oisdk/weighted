@@ -15,6 +15,8 @@ import Control.Monad.Trans (lift)
 
 import Data.Semiring
 
+import Data.Coerce
+
 class (Semiring w, Monad m) => MonadWeighted w m | m -> w where
     {-# MINIMAL (weighted | weight), weigh, scale #-}
     -- | @'weighted' (a,w)@ embeds a simple weighted action.
@@ -70,3 +72,10 @@ instance MonadWeighted w m => MonadWeighted w (Reader.ReaderT r m) where
     weight   = lift . weight
     weigh    = Reader.mapReaderT weigh
     scale    = Reader.mapReaderT scale
+
+collect :: (Foldable m, MonadWeighted w m) => m a -> w
+collect = getAdd  #. foldMap (Add #. snd) . weigh
+
+infixr 9 #.
+(#.) :: Coercible b c => (b -> c) -> (a -> b) -> a -> c
+(#.) _ = coerce
