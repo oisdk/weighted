@@ -79,3 +79,6 @@ collect = getAdd  #. foldMap (Add #. snd) . weigh
 infixr 9 #.
 (#.) :: Coercible b c => (b -> c) -> (a -> b) -> a -> c
 (#.) _ = coerce
+
+toCont :: (Foldable m, MonadWeighted w m) => (a -> w) -> m a -> w
+toCont f xs = collect (weight . f =<< xs)
