@@ -19,7 +19,7 @@ module Control.Monad.Weighted
 import           Control.Applicative
 import           Control.Monad.Identity
 import           Control.Monad.State.Strict
-import           Control.Monad.Writer
+import           Control.Monad.Writer.Class
 import           Data.Coerce
 import           Data.Semiring
 

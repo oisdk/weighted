@@ -1,9 +1,9 @@
 name:                weighted
-version:             0.1.0.0
--- synopsis:
--- description:
+version:             0.1.0.1
+synopsis:            Writer monad which uses semiring constraint
+description:         Writer monad which uses semiring constraint
 homepage:            https://github.com/oisdk/weighted
-license:             BSD3
+license:             MIT
 license-file:        LICENSE
 author:              Donnacha Oisín Kidney
 maintainer:          mail@doisinkidney.com
@@ -16,7 +16,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Control.Monad.Weighted
   build-depends:       base >= 4.9 && < 5
-                     , semiring-num >= 0.5
+                     , semiring-num >= 0.5.1.1
                      , mtl >= 2.2
   default-language:    Haskell2010
 
