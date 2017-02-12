@@ -35,22 +35,33 @@ import           Control.Arrow                (first)
 import           Data.Coerce
 import           Data.Monoid
 
-catchZero :: (DetectableZero s, Alternative m) => (s -> m a) -> s -> m a
-catchZero f s | isZero s = empty
-              | otherwise = f s
+catchZero
+    :: (DetectableZero s, Alternative m)
+    => (s -> m a) -> s -> m a
+catchZero f s
+  | isZero s = empty
+  | otherwise = f s
+
 {-# INLINE catchZero #-}
 
-remZeroes :: (DetectableZero s, Alternative m, Monad m) => m (a, s) -> m (a, s)
-remZeroes xs = xs >>=  (\(x,p) -> if isZero p then empty else pure (x,p))
+remZeroes
+    :: (DetectableZero s, Alternative m, Monad m)
+    => m (a, s) -> m (a, s)
+remZeroes xs =
+    xs >>=
+    (\(x,p) ->
+          if isZero p
+              then empty
+              else pure (x, p))
 
 -- | A weighted monad which discards results which are zero as it goes.
-newtype FilterT s m a =
-    FilterT_ { unFilterT :: StateT s m a }
-    deriving (MonadTrans,MonadCont,MonadError e
-             ,MonadReader r,MonadFix,MonadFail,MonadIO,Alternative,MonadPlus
-             ,MonadWriter w)
+newtype FilterT s m a = FilterT_
+    { unFilterT :: StateT s m a
+    } deriving (MonadTrans,MonadCont,MonadError e,MonadReader r,MonadFix
+               ,MonadFail,MonadIO,Alternative,MonadPlus,MonadWriter w)
 
-instance (Alternative m, DetectableZero s) => Functor (FilterT s m) where
+instance (Alternative m, DetectableZero s) =>
+         Functor (FilterT s m) where
     fmap f (FilterT_ (StateT st)) =
         (FilterT_ . StateT . catchZero) ((fmap . first) f . st)
     {-# INLINE fmap #-}
@@ -87,7 +98,8 @@ instance (Alternative m, Monad m, DetectableZero s) =>
 runFilterT
     :: (DetectableZero s, Alternative m, Monad m)
     => FilterT s m a -> m (a, s)
-runFilterT = remZeroes .
+runFilterT =
+    remZeroes .
     (coerce :: (StateT s m a -> m (a, s)) -> FilterT s m a -> m (a, s))
         (`runStateT` one)
 
@@ -115,11 +127,15 @@ execFilterT =
 
 -- | This pattern gives an interface to the 'FilterT' monad which makes it look as if
 -- it were defined without the state monad.
-pattern FilterT :: (Alternative m, DetectableZero s, Monad m) => m (a, s) -> FilterT s m a
-pattern FilterT x <- (runFilterT -> x)
-  where FilterT y = FilterT_ . StateT . catchZero $ \s -> (fmap.fmap) (s<.>) y
+pattern FilterT :: (Alternative m, DetectableZero s, Monad m) =>
+        m (a, s) -> FilterT s m a
 
-instance (DetectableZero w, Monad m, Alternative m) => MonadWeighted w (FilterT w m) where
+pattern FilterT x <- (runFilterT -> x)
+  where FilterT y
+          = FilterT_ . StateT . catchZero $ \ s -> (fmap . fmap) (s <.>) y
+
+instance (DetectableZero w, Monad m, Alternative m) =>
+         MonadWeighted w (FilterT w m) where
     weighted (x,s) = FilterT (pure (x, s))
     {-# INLINE weighted #-}
     weigh (FilterT_ s) = FilterT_ ((,) <$> s <*> get)
