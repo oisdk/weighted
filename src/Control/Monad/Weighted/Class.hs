@@ -2,7 +2,11 @@
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
-module Control.Monad.Weighted.Class where
+module Control.Monad.Weighted.Class
+  ( MonadWeighted(..)
+  , collect
+  , toCovector
+  ) where
 
 import qualified Control.Monad.Trans.Identity as Identity
 import qualified Control.Monad.Trans.Except as Except
@@ -17,6 +21,8 @@ import Data.Semiring
 
 import Data.Coerce
 
+-- | A class for computations which carry a weight with them. It is analogous
+-- to 'Control.Monad.Writer.Writer' over the 'Data.Monoid.Product' 'Monoid'.
 class (Semiring w, Monad m) => MonadWeighted w m | m -> w where
     {-# MINIMAL (weighted | weight), weigh, scale #-}
     -- | @'weighted' (a,w)@ embeds a simple weighted action.
@@ -73,6 +79,7 @@ instance MonadWeighted w m => MonadWeighted w (Reader.ReaderT r m) where
     weigh    = Reader.mapReaderT weigh
     scale    = Reader.mapReaderT scale
 
+-- | Collect the total weight of a computation.
 collect :: (Foldable m, MonadWeighted w m) => m a -> w
 collect = getAdd  #. foldMap (Add #. snd) . weigh
 
@@ -80,5 +87,6 @@ infixr 9 #.
 (#.) :: Coercible b c => (b -> c) -> (a -> b) -> a -> c
 (#.) _ = coerce
 
-toCont :: (Foldable m, MonadWeighted w m) => (a -> w) -> m a -> w
-toCont f xs = collect (weight . f =<< xs)
+-- | Transform a weighted computation to a covector.
+toCovector :: (Foldable m, MonadWeighted w m) => m a -> (a -> w) -> w
+toCovector xs f = collect (weight . f =<< xs)

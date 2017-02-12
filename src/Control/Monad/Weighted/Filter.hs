@@ -1,13 +1,15 @@
 {-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE Strict                     #-}
 {-# LANGUAGE UndecidableInstances       #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE PatternSynonyms            #-}
 {-# LANGUAGE ViewPatterns               #-}
 
+-- | This module provides a weighted monad which filters out zero-weighted
+-- results from a  computation at every opportunity.
 module Control.Monad.Weighted.Filter
-  (catchZero
-  ,FilterT
+  (FilterT
   ,pattern FilterT
   ,runFilterT
   ,evalFilterT
@@ -36,11 +38,12 @@ import           Data.Monoid
 catchZero :: (DetectableZero s, Alternative m) => (s -> m a) -> s -> m a
 catchZero f s | isZero s = empty
               | otherwise = f s
+{-# INLINE catchZero #-}
 
 remZeroes :: (DetectableZero s, Alternative m, Monad m) => m (a, s) -> m (a, s)
 remZeroes xs = xs >>=  (\(x,p) -> if isZero p then empty else pure (x,p))
 
--- | Discards results which are zero
+-- | A weighted monad which discards results which are zero as it goes.
 newtype FilterT s m a =
     FilterT_ { unFilterT :: StateT s m a }
     deriving (MonadTrans,MonadCont,MonadError e
@@ -80,6 +83,7 @@ instance (Alternative m, Monad m, DetectableZero s) =>
                 s''
     {-# INLINE (>>=) #-}
 
+-- | Run a filtered computation in the underlying monad.
 runFilterT
     :: (DetectableZero s, Alternative m, Monad m)
     => FilterT s m a -> m (a, s)
@@ -89,6 +93,7 @@ runFilterT = remZeroes .
 
 {-# INLINE runFilterT #-}
 
+-- | Evaluate a filtered computation in the underlying monad and return its result.
 evalFilterT
     :: (Monad m, Semiring s)
     => FilterT s m a -> m a
@@ -98,6 +103,7 @@ evalFilterT =
 
 {-# INLINE evalFilterT #-}
 
+-- | Evaluate a filtered computation in the underlying monad and collect its weight.
 execFilterT
     :: (Monad m, Semiring s)
     => FilterT s m a -> m s
@@ -107,6 +113,8 @@ execFilterT =
 
 {-# INLINE execFilterT #-}
 
+-- | This pattern gives an interface to the 'FilterT' monad which makes it look as if
+-- it were defined without the state monad.
 pattern FilterT :: (Alternative m, DetectableZero s, Monad m) => m (a, s) -> FilterT s m a
 pattern FilterT x <- (runFilterT -> x)
   where FilterT y = FilterT_ . StateT . catchZero $ \s -> (fmap.fmap) (s<.>) y
