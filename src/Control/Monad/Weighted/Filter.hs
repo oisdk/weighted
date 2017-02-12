@@ -31,9 +31,11 @@ import           Control.Monad.Reader.Class
 import           Control.Monad.Weighted.Class
 import           Control.Monad.Writer.Class
 
-import           Control.Arrow                (first)
 import           Data.Coerce
 import           Data.Monoid
+
+first :: (a -> b) -> (a, c) -> (b, c)
+first f (x, y) = (f x, y)
 
 catchZero
     :: (DetectableZero s, Alternative m)

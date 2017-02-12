@@ -78,7 +78,9 @@ import           Data.Semiring
 -- newtype wrapper.
 newtype WeightedT s m a =
     WeightedT_ (StateT s m a)
-    deriving (Functor,Applicative,Monad,MonadTrans,MonadCont,MonadError e,MonadReader r,MonadFix,MonadFail,MonadIO,Alternative,MonadPlus,MonadWriter w)
+    deriving (Functor,Applicative,Monad,MonadTrans,MonadCont
+             ,MonadError e,MonadReader r,MonadFix,MonadFail
+             ,MonadIO,Alternative,MonadPlus,MonadWriter w)
 
 -- | Run a weighted computation in the underlying monad.
 runWeightedT
